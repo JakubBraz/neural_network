@@ -1,13 +1,25 @@
 use rand::random;
 use crate::network_math;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct NeuralNetwork {
     pub weights: Vec<Vec<Vec<f32>>>,
     pub biases: Vec<Vec<f32>>,
+    pre_activations: Vec<Vec<f32>>,
+    activations: Vec<Vec<f32>>,
+}
+
+impl PartialEq for NeuralNetwork {
+    fn eq(&self, other: &Self) -> bool {
+        self.weights == other.weights && self.biases == other.biases
+    }
 }
 
 impl NeuralNetwork {
+    fn activation(x: f32) -> f32 {
+        1.0 / (1.0 + (-x).exp())
+    }
+
     pub fn new(layers: &[u32]) -> Self {
         // first layer is input, the last one is output
         // there is no bias layer for first layer (input)
@@ -26,28 +38,89 @@ impl NeuralNetwork {
             }
         }
 
+        let mut pre_activations: Vec<Vec<f32>> = Vec::new();
+        let mut activations: Vec<Vec<f32>> = Vec::new();
+
+        for i in 0..biases.len() {
+            let empty_vec = vec![0.0; biases[i].len()];
+            pre_activations.push(empty_vec.clone());
+            activations.push(empty_vec);
+        }
+
         NeuralNetwork {
-            weights, biases
+            weights, biases, pre_activations, activations
         }
     }
 
     pub fn empty() -> Self {
-        Self { weights: vec![], biases: vec![] }
+        Self { weights: vec![], biases: vec![], pre_activations: vec![], activations: vec![] }
     }
 
-    pub fn activation(x: f32) -> f32 {
-        1.0 / (1.0 + (-x).exp())
-    }
-
-    pub fn process(&self, input: &[f32]) -> Vec<f32> {
-        let mut result: Vec<f32> = input.to_vec();
+    pub fn process(&mut self, input: &[f32]) -> Vec<f32> {
+        //todo improve it, parallelize and calculate product in sum in a one go instead of separate functions
         for i in 0..self.weights.len() {
-            let mut new_result = network_math::product(&self.weights[i], &result);
-            new_result = network_math::sum(&new_result, &self.biases[i]);
-            new_result = new_result.iter().map(|&v| NeuralNetwork::activation(v)).collect();
-            result = new_result;
+            let prev = if i==0 { input } else { &self.activations[i-1] };
+            network_math::product(&self.weights[i], prev, &mut self.pre_activations[i]);
+            network_math::sum(&mut self.pre_activations[i], &self.biases[i]);
+            for j in 0..self.activations[i].len() {
+                self.activations[i][j] = NeuralNetwork::activation(self.pre_activations[i][j]);
+            }
         }
-        result
+        self.activations.last().unwrap().clone()
+    }
+
+    pub fn training_step(&mut self, inputs: &[f32], targets: &[f32], learning_rate: f32) {
+        let processed = self.process(inputs);
+
+        let mut deltas: Vec<Vec<f32>> = self.biases.iter().map(|x| x.iter().map(|_| 0.0).collect()).collect();
+        let mut gradients_weights = self.weights.clone();
+        let mut gradients_biases = self.biases.clone();
+
+        // calculate last layer gradients
+        let layer = self.weights.len() - 1;
+        deltas[layer] = processed.iter().zip(targets.iter()).map(|(&a, &y)| (a - y) * a * (1.0 - a)).collect();
+        Self::update_gradients(layer, &deltas, inputs, &mut gradients_biases, &mut gradients_weights, &self.activations);
+        // for i in 0..deltas[layer].len() {
+        //     gradients_biases[layer][i] = deltas[layer][i];
+        //     for j in 0..gradients_weights[layer][i].len() {
+        //         let prev = if layer == 0 { inputs } else { &self.activations[layer-1] };
+        //         gradients_weights[layer][i][j] = deltas[layer][i] * prev[j];
+        //     }
+        // }
+
+        // calculate gradients of the remaining layers
+        for layer in (0 .. (self.weights.len() - 1)).rev() {
+            for i in 0..self.weights[layer][0].len() {
+                let mut tmp = 0.0;
+                for j in 0..self.biases[layer + 1].len() {
+                    tmp += deltas[layer + 1][j] * self.weights[layer][j][i];
+                }
+                let prev = if layer == 0 { inputs } else { &self.activations[layer-1] };
+                deltas[layer][i] = tmp * prev[i] * (1.0 - prev[i]);
+            }
+
+            Self::update_gradients(layer, &deltas, inputs, &mut gradients_biases, &mut gradients_weights, &self.activations);
+        }
+
+        // update weights and biases
+        for layer in 0..gradients_biases.len() {
+            for i in 0..gradients_biases[layer].len() {
+                for j in 0..gradients_weights[layer][i].len() {
+                    self.weights[layer][i][j] -= learning_rate * gradients_weights[layer][i][j];
+                }
+                self.biases[layer][i] -= learning_rate * gradients_biases[layer][i];
+            }
+        }
+    }
+
+    fn update_gradients(layer: usize, deltas: &Vec<Vec<f32>>, inputs: &[f32], gradients_biases: &mut Vec<Vec<f32>>, gradients_weights: &mut Vec<Vec<Vec<f32>>>, activations: &Vec<Vec<f32>>) {
+        for i in 0..deltas[layer].len() {
+            gradients_biases[layer][i] = deltas[layer][i];
+            for j in 0..gradients_weights[layer][i].len() {
+                let prev = if layer == 0 { inputs } else { &activations[layer-1] };
+                gradients_weights[layer][i][j] = deltas[layer][i] * prev[j];
+            }
+        }
     }
 
     pub fn serialize(&self) -> String {
@@ -110,6 +183,7 @@ impl NeuralNetwork {
 }
 
 mod test {
+    use std::cmp::PartialEq;
     use crate::neural_network::NeuralNetwork;
 
     fn get_network() -> NeuralNetwork {
@@ -133,6 +207,8 @@ mod test {
                 vec![0.2, -0.9],
                 vec![0.6]
             ],
+            pre_activations: vec![vec![0.0, 0.0, 0.0], vec![0.0, 0.0], vec![0.0]],
+            activations: vec![vec![0.0, 0.0, 0.0], vec![0.0, 0.0], vec![0.0]],
         }
     }
 
@@ -147,7 +223,7 @@ mod test {
 
     #[test]
     fn test_process_network() {
-        let network = get_network();
+        let mut network = get_network();
 
         /*
         f = lambda x: 1.0 / (1 + math.exp(-x))
@@ -164,6 +240,7 @@ mod test {
         let result = network.process(&[0.1, 0.8]);
 
         assert_eq!(result.len(), 1);
+        // assert_eq!(result[0], expected);
         assert!((result[0] - expected).abs() < 0.001);
     }
 
@@ -194,9 +271,13 @@ mod test {
         let deserialized = NeuralNetwork::deserialize(serialized);
         let expected = NeuralNetwork {
             weights: vec![vec![vec![0.99]], vec![vec![0.13]]],
-            biases: vec![vec![0.33], vec![3.14]]
+            biases: vec![vec![0.33], vec![3.14]],
+            pre_activations: vec![],
+            activations: vec![],
         };
 
         assert_eq!(deserialized, expected);
     }
+
+    //todo add a test for learning_step
 }
