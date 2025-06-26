@@ -31,10 +31,17 @@ impl NeuralNetwork {
             for _ in 0..layers[i] {
                 let mut v: Vec<f32> = Vec::new();
                 for _ in 0..layers[i - 1] {
-                    v.push(random());
+                    //todo a lot depend on inital weights, very often all goes to 0 :/
+
+                    // v.push((random::<f32>() * 2.0 - 1.0) * 0.1);
+                    v.push((random::<f32>() * 2.0 - 1.0) * 0.2);
+                    // v.push(random());
                 }
                 weights.last_mut().unwrap().push(v);
-                biases.last_mut().unwrap().push(random::<f32>() * 10.0 - 5.0);
+                // biases.last_mut().unwrap().push(random::<f32>() * 10.0 - 5.0);
+                // biases.last_mut().unwrap().push(random::<f32>() * 100.0 - 50.0);
+                // biases.last_mut().unwrap().push((random::<f32>() * 2.0 - 1.0) * 0.1);
+                biases.last_mut().unwrap().push((random::<f32>() * 2.0 - 1.0) * 0.2);
             }
         }
 
@@ -88,19 +95,28 @@ impl NeuralNetwork {
         //     }
         // }
 
+        // println!("TERAZ WAZNE {:?}", deltas[layer]);
+        // panic!();
+
         // calculate gradients of the remaining layers
         for layer in (0 .. (self.weights.len() - 1)).rev() {
-            for i in 0..self.weights[layer][0].len() {
+            for i in 0..self.biases[layer].len() {
+            // for i in 0..self.weights[layer][0].len() {
+            // for i in 0..self.weights[layer + 1][0].len() {
                 let mut tmp = 0.0;
                 for j in 0..self.biases[layer + 1].len() {
-                    tmp += deltas[layer + 1][j] * self.weights[layer][j][i];
+                    tmp += deltas[layer + 1][j] * self.weights[layer + 1][j][i];
                 }
-                let prev = if layer == 0 { inputs } else { &self.activations[layer-1] };
-                deltas[layer][i] = tmp * prev[i] * (1.0 - prev[i]);
+                deltas[layer][i] = tmp * &self.activations[layer][i] * (1.0 - &self.activations[layer][i]);
             }
 
             Self::update_gradients(layer, &deltas, inputs, &mut gradients_biases, &mut gradients_weights, &self.activations);
         }
+
+        // println!("weights {:?}", &self.weights[0][0][0..5]);
+        // println!("gradients weight {:?}", &gradients_weights[0][0][0..5]);
+        // println!("gradients biases {:?}", &gradients_biases[0][0..5]);
+        // println!("deltas {} {:?}", deltas[1].iter().all(|&x| x == 0.0), &deltas[0][0..10]);
 
         // update weights and biases
         for layer in 0..gradients_biases.len() {
@@ -133,6 +149,7 @@ impl NeuralNetwork {
 
         let mut result: Vec<String> = Vec::new();
         for layer in 1..header.len() {
+            result.push(format!("layer {}", layer));
             for current_layer_i in 0..header[layer] as usize {
                 for prev_layer_i in 0..header[layer - 1] as usize {
                     result.push(self.weights[layer - 1][current_layer_i][prev_layer_i].to_string());
@@ -218,6 +235,7 @@ mod test {
         assert!((NeuralNetwork::activation(0.976) - 0.72631).abs() < 0.001);
         assert!((NeuralNetwork::activation(0.01) - 0.50249).abs() < 0.001);
         assert!((NeuralNetwork::activation(-0.75) - 0.32082).abs() < 0.001);
+        //todo interesting, the precision is pretty low here, where is it lost?
         assert!((NeuralNetwork::activation(0.0) - 0.5).abs() < 0.001);
     }
 
@@ -279,5 +297,6 @@ mod test {
         assert_eq!(deserialized, expected);
     }
 
-    //todo add a test for learning_step
+    //todo add at least invoking of "training_step", so it doesn't crash on different values
+    //todo add a test for learning_step, calculate values manually
 }
