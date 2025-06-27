@@ -3,6 +3,14 @@ name = "neural_network"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "neural_network_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "neural_network"
+path = "src/main.rs"
+
 [dependencies]
 rand = "0.9.0"
 image = "0.25.5"

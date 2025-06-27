@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digit predictor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Digit predictor</h1>
+        <div class="main-content">
+            <div class="canvas-section">
+                <div class="canvas-container">
+                    <canvas id="drawingCanvas" width="100" height="100"></canvas>
+                </div>
+                <div class="controls">
+                    <button id="clearCanvas">Clear</button>
+                    <label for="brushSize">Brush Size:</label>
+                    <input type="range" id="brushSize" min="1" max="10" value="2">
+                    <span id="brushSizeValue">2</span>
+                </div>
+            </div>
+            <div class="predictions-section">
+                <h3>Predictions:</h3>
+                <div id="error-message" class="error-message"></div>
+                <div class="predictions-grid">
+                    <div class="prediction-item">
+                        <span class="digit-label">0:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-0"></div>
+                        </div>
+                        <span class="percentage" id="digit-0">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">1:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-1"></div>
+                        </div>
+                        <span class="percentage" id="digit-1">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">2:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-2"></div>
+                        </div>
+                        <span class="percentage" id="digit-2">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">3:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-3"></div>
+                        </div>
+                        <span class="percentage" id="digit-3">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">4:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-4"></div>
+                        </div>
+                        <span class="percentage" id="digit-4">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">5:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-5"></div>
+                        </div>
+                        <span class="percentage" id="digit-5">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">6:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-6"></div>
+                        </div>
+                        <span class="percentage" id="digit-6">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">7:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-7"></div>
+                        </div>
+                        <span class="percentage" id="digit-7">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">8:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-8"></div>
+                        </div>
+                        <span class="percentage" id="digit-8">0.0%</span>
+                    </div>
+                    <div class="prediction-item">
+                        <span class="digit-label">9:</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bar-9"></div>
+                        </div>
+                        <span class="percentage" id="digit-9">0.0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

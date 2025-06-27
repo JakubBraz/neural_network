@@ -3,7 +3,7 @@ use image::{GenericImageView, ImageReader, Rgba};
 pub const WIDTH: usize = 28;
 pub const HEIGHT: usize = 28;
 
-fn result_array(digit: u8) -> [f32; 10] {
+fn result_array(digit: u8) -> [f64; 10] {
     match digit {
         0 => [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         1 => [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -19,7 +19,7 @@ fn result_array(digit: u8) -> [f32; 10] {
     }
 }
 
-pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f32; WIDTH * HEIGHT], [f32; 10]) {
+pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f64; WIDTH * HEIGHT], [f64; 10]) {
     let path = format!("{catalog}/{digit}/{digit}/{index}.png");
     let img = ImageReader::open(path).unwrap().decode().unwrap();
     let zero_pixel = Rgba::from([0, 0, 0, 0]);
@@ -28,10 +28,10 @@ pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f32; WIDTH *
         for col in 0..HEIGHT {
             //for now, I treat every pixel binary, if there is any shade of gray the pixel is considered "on"
             let p = img.get_pixel(row as u32, col as u32);
-            if p != zero_pixel {
-                result[col * HEIGHT + row] = 1.0;
-            }
-            // result[col * HEIGHT + row] = p[3] as f32 / 255.0;
+            // if p != zero_pixel {
+            //     result[col * HEIGHT + row] = 1.0;
+            // }
+            result[col * HEIGHT + row] = p[3] as f64 / 255.0;
         }
     }
     (result, result_array(digit))
