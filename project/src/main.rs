@@ -40,8 +40,8 @@ mod image;
 
 fn main() {
     // let mut neural_network = NeuralNetwork::new(&[(WIDTH * HEIGHT) as u32, 100, 10]);
-    // let mut neural_network = NeuralNetwork::new(&[(WIDTH * HEIGHT) as u32, 800, 10]);
-    let mut neural_network = NeuralNetwork::new(&[(WIDTH * HEIGHT) as u32, 1000, 800, 10]);
+    let mut neural_network = NeuralNetwork::new(&[(WIDTH * HEIGHT) as u32, 800, 10]);
+    // let mut neural_network = NeuralNetwork::new(&[(WIDTH * HEIGHT) as u32, 1000, 800, 10]);
     let old_network = neural_network.clone();
     save(&neural_network, "new_network");
     test_data(&mut neural_network);

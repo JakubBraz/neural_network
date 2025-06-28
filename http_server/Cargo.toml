@@ -5,5 +5,5 @@ edition = "2024"
 
 [dependencies]
 neural_network = { path = "../project" }
-#rocket = { version = "0.5.1", features = [] }
-rocket = { version = "0.5.1" }
+#rocket = { version = "0.5.1", features = ["derive"] }
+rocket = { version = "0.5.1", features = ["json"] }

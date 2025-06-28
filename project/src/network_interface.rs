@@ -28,9 +28,11 @@ pub fn learn(neural_network: &mut NeuralNetwork) {
     // let training_rate = 0.001;
     // let training_rate = 1.0;
     // let training_rate = 0.01;
-    let training_rate = 0.1;
+    // let training_rate = 0.1;
+    let training_rate = 0.5;
 
-    let duration = Duration::from_secs(60 * 60 * 10);
+    // let duration = Duration::from_secs(60 * 60 * 10);
+    let duration = Duration::from_secs(60 * 10);
 
     let mut i = 0;
     let time = Instant::now();

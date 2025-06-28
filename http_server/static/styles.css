@@ -18,6 +18,43 @@ body {
     max-width: 800px;
 }
 
+.navigation-menu {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #007bff;
+    background-color: #f8f9fa;
+}
+
+.nav-link {
+    padding: 12px 24px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 600;
+    background-color: transparent;
+    transition: all 0.3s ease;
+    border: none;
+    flex: 1;
+    text-align: center;
+}
+
+.nav-link:hover {
+    background-color: #e3f2fd;
+    color: #0056b3;
+}
+
+.nav-link.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.nav-link.active:hover {
+    background-color: #0056b3;
+}
+
 .main-content {
     display: flex;
     gap: 40px;

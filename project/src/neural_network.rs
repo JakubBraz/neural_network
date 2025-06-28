@@ -102,6 +102,7 @@ impl NeuralNetwork {
         // calculate last layer gradients
         let layer = self.weights.len() - 1;
         deltas[layer] = processed.iter().zip(targets.iter()).map(|(&a, &y)| (a - y) * a * (1.0 - a)).collect();
+        // deltas[layer] = processed.iter().zip(targets.iter()).map(|(&a, &y)| (y - a) * a * (1.0 - a)).collect();
         Self::update_gradients(layer, &deltas, inputs, &mut gradients_biases, &mut gradients_weights, &self.activations);
         // for i in 0..deltas[layer].len() {
         //     gradients_biases[layer][i] = deltas[layer][i];
@@ -111,7 +112,7 @@ impl NeuralNetwork {
         //     }
         // }
 
-        // println!("TERAZ WAZNE {:?}", deltas[layer]);
+        println!("DELTAS OUTPUT {:?}", deltas[layer]);
         // panic!();
 
         // calculate gradients of the remaining layers
@@ -367,6 +368,33 @@ mod test {
         println!("RESULT: {:?}", result);
 
         network.training_step(&input, &target, 0.5);
+
+        println!("new weights: {:?}", network.weights);
+        println!("new biases: {:?}", network.biases);
+    }
+
+    #[test]
+    fn test_learning_step2() {
+        let mut network = NeuralNetwork::new(&[2, 2, 1]);
+        network.weights = vec![
+            vec![
+                vec![0.5, 0.3],
+                vec![-0.2, 0.7],
+            ],
+            vec![
+                vec![0.4, -0.6],
+            ],
+        ];
+        network.biases = vec![
+            vec![0.1, -0.3],
+            vec![0.2],
+        ];
+
+        let input = vec![0.8, 0.4];
+        let target = vec![0.9];
+
+        println!("result {:?}", network.process_mutable(&input));
+        network.training_step(&input, &target, 0.1);
 
         println!("new weights: {:?}", network.weights);
         println!("new biases: {:?}", network.biases);

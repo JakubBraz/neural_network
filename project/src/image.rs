@@ -1,4 +1,4 @@
-use image::{GenericImageView, ImageReader, Rgba};
+use image::{GenericImageView, ImageBuffer, ImageReader, Rgba, RgbaImage};
 
 pub const WIDTH: usize = 28;
 pub const HEIGHT: usize = 28;
@@ -35,6 +35,18 @@ pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f64; WIDTH *
         }
     }
     (result, result_array(digit))
+}
+
+pub fn save_training_data(catalog: &str, digit: u8, image_data: &[f64], index: u32) {
+    let path = format!("{catalog}/{digit}/{digit}/{index}.png");
+    let mut img = RgbaImage::new(WIDTH as u32, HEIGHT as u32);
+    for col in 0..HEIGHT {
+        for row in 0..WIDTH {
+            let pixel = Rgba::from([0, 0, 0, (image_data[col * HEIGHT + row] * 255.0) as u8]);
+            img.put_pixel(row as u32, col as u32, pixel);
+        }
+    }
+    img.save(path).unwrap();
 }
 
 pub fn read() {

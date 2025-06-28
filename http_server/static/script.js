@@ -3,7 +3,7 @@ class DrawingCanvas {
         this.canvas = document.getElementById('drawingCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.isDrawing = false;
-        this.currentBrushSize = 2;
+        this.currentBrushSize = 6;
         
         this.initializeCanvas();
         this.setupEventListeners();
@@ -234,7 +234,186 @@ class DrawingCanvas {
     }
 }
 
-// Initialize the drawing canvas when the page loads
+// Training-specific canvas class that doesn't auto-predict
+class TrainingCanvas extends DrawingCanvas {
+    constructor() {
+        super();
+    }
+    
+    // Override stopDrawing to prevent automatic prediction
+    stopDrawing() {
+        if (this.isDrawing) {
+            this.isDrawing = false;
+            this.ctx.beginPath();
+            // Don't auto-send for prediction in training mode
+        }
+    }
+    
+    // Override resetPredictions since we don't have predictions in training
+    resetPredictions() {
+        // No predictions to reset in training mode
+    }
+}
+
+class TrainingInterface {
+    constructor() {
+        this.currentDigit = this.generateRandomDigit();
+        this.drawingCanvas = null;
+        this.initializeInterface();
+        this.setupEventListeners();
+    }
+    
+    generateRandomDigit() {
+        return Math.floor(Math.random() * 10);
+    }
+    
+    initializeInterface() {
+        this.updateTargetDigit();
+        
+        // Initialize training canvas instead of regular canvas
+        this.drawingCanvas = new TrainingCanvas();
+        window.drawingCanvasInstance = this.drawingCanvas;
+        
+        // Load initial file count
+        this.loadFileCount();
+    }
+    
+    updateTargetDigit() {
+        const targetElement = document.getElementById('targetDigit');
+        targetElement.textContent = this.currentDigit;
+    }
+    
+    async loadFileCount() {
+        const fileCountElement = document.getElementById('fileCountNumber');
+        if (fileCountElement) {
+            fileCountElement.textContent = '';
+            
+            try {
+                const response = await fetch('/count', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const count = await response.text();
+                    fileCountElement.textContent = count;
+                } else {
+                    console.error('Failed to load file count:', response.status);
+                    fileCountElement.textContent = 'Error loading count';
+                }
+            } catch (error) {
+                console.error('Network error while loading file count:', error);
+                fileCountElement.textContent = 'Network error';
+            }
+        }
+    }
+    
+    updateFileCount(count) {
+        const fileCountElement = document.getElementById('fileCountNumber');
+        if (fileCountElement) {
+            fileCountElement.textContent = count;
+        }
+    }
+    
+    setupEventListeners() {
+        const sendButton = document.getElementById('sendTrainingData');
+        if (sendButton) {
+            sendButton.addEventListener('click', () => this.sendTrainingData());
+        }
+        
+        // Add keyboard event listener for space key
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault(); // Prevent page scrolling
+                this.sendTrainingData();
+            }
+        });
+    }
+    
+    async sendTrainingData() {
+        if (!this.drawingCanvas) {
+            this.showMessage('Drawing canvas not ready. Please try again.', 'error');
+            return;
+        }
+        
+        const sendButton = document.getElementById('sendTrainingData');
+        sendButton.disabled = true;
+        
+        try {
+            // Get the grayscale array from the drawing canvas
+            const grayscaleArray = this.drawingCanvas.convertTo28x28Grayscale();
+            
+            // Prepare training data
+            const trainingData = {
+                digit: this.currentDigit,
+                image_data: grayscaleArray
+            };
+            
+            // Send to server
+            const response = await fetch('/training', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(trainingData)
+            });
+            
+            if (response.ok) {
+                const fileCount = await response.text();
+                this.updateFileCount(fileCount);
+                
+                // Generate next digit after successful submission
+                this.nextDigit();
+            } else {
+                this.showMessage('Server error occurred', 'error');
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            this.showMessage('Network error - server not available', 'error');
+        } finally {
+            sendButton.disabled = false;
+        }
+    }
+    
+    nextDigit() {
+        this.currentDigit = this.generateRandomDigit();
+        this.updateTargetDigit();
+        
+        // Clear the canvas
+        if (this.drawingCanvas) {
+            this.drawingCanvas.clearCanvas();
+        }
+    }
+    
+    showMessage(message, type) {
+        const statusElement = document.getElementById('statusMessage');
+        if (statusElement) {
+            statusElement.textContent = message;
+            statusElement.className = `status-message ${type}`;
+            statusElement.style.display = 'block';
+            
+            // Auto-hide message after 2 seconds
+            setTimeout(() => {
+                this.hideMessage();
+            }, 2000);
+        }
+    }
+    
+    hideMessage() {
+        const statusElement = document.getElementById('statusMessage');
+        if (statusElement) {
+            statusElement.style.display = 'none';
+        }
+    }
+}
+
+// Initialize the appropriate canvas based on the page
 document.addEventListener('DOMContentLoaded', () => {
-    new DrawingCanvas();
+    // Check if we're on the training page
+    if (document.getElementById('sendTrainingData')) {
+        // Training page
+        new TrainingInterface();
+    } else {
+        // Prediction page
+        window.drawingCanvasInstance = new DrawingCanvas();
+    }
 });

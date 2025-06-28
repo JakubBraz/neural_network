@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Training Data Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .training-section {
+            background-color: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .target-digit {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #007bff;
+            margin: 20px 0;
+        }
+        
+        .instruction {
+            font-size: 1.2rem;
+            margin: 15px 0;
+            color: #333;
+        }
+        
+        .send-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .send-button:hover {
+            background-color: #218838;
+        }
+        
+        .send-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .status-message {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .training-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .file-count-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .file-count-label {
+            color: #6c757d;
+            font-weight: normal;
+        }
+        
+        .file-count-number {
+            color: #007bff;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="file-count-display" id="fileCountDisplay">
+            <span class="file-count-label">Samples: </span>
+            <span class="file-count-number" id="fileCountNumber">Loading...</span>
+        </div>
+        <nav class="navigation-menu">
+            <a href="index.html" class="nav-link">Prediction</a>
+            <a href="training.html" class="nav-link active">Training</a>
+        </nav>
+        <h1>Neural Network Training Data Generator</h1>
+        
+        <div class="training-section">
+            <h2>Draw this digit:</h2>
+            <div class="target-digit" id="targetDigit">5</div>
+            <p class="instruction">Draw the digit shown above on the canvas below, then click "Send" to submit training data.</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="canvas-section">
+                <div class="canvas-container">
+                    <canvas id="drawingCanvas" width="100" height="100"></canvas>
+                </div>
+                <div class="controls">
+                    <button id="clearCanvas">Clear</button>
+                    <label for="brushSize">Brush Size:</label>
+                    <input type="range" id="brushSize" min="1" max="10" value="6">
+                    <span id="brushSizeValue">6</span>
+                </div>
+                <div class="training-controls">
+                    <button id="sendTrainingData" class="send-button">Send</button>
+                </div>
+                <div id="statusMessage" class="status-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
