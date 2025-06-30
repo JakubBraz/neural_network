@@ -1,18 +1,22 @@
+use std::fs;
 use std::fs::{read, read_to_string, write, File};
 use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use rand::random;
-use crate::image::get_training_data;
+use rand::seq::IteratorRandom;
+use crate::image::{get_training_data, get_training_data_path};
 use crate::neural_network::NeuralNetwork;
 
 pub fn test_data(neural_network: &mut NeuralNetwork) {
     check_digits(neural_network, "verification_dataset");
     check_digits(neural_network, "dataset");
+    check_digits(neural_network, "training_data");
 }
 
 fn check_digits(neural_network: &mut NeuralNetwork, dataset: &str) {
     for digit in 0..10 {
-        let (input, _target) = get_training_data(dataset, digit, 0);
+        let (input, _target) = get_training_data_path(&random_file(&format!("{dataset}/{digit}/{digit}/")), digit);
         let result = neural_network.process_mutable(&input);
         // println!("INPUT: {:?}", &input[260..270]);
         println!("{dataset} {digit}: {result:?}");
@@ -32,7 +36,7 @@ pub fn learn(neural_network: &mut NeuralNetwork) {
     let training_rate = 0.5;
 
     // let duration = Duration::from_secs(60 * 60 * 10);
-    let duration = Duration::from_secs(60 * 10);
+    let duration = Duration::from_secs(60 * 5);
 
     let mut i = 0;
     let time = Instant::now();
@@ -56,12 +60,20 @@ pub fn learn(neural_network: &mut NeuralNetwork) {
             println!("{}; iteration {};", chrono::Local::now(), i);
         }
         let digit: u8 = random::<u8>() % 10;
-        let index: u16 = random::<u16>() % 10773;
-        let (input, target) = get_training_data("dataset", digit, index);
+        // let index: u16 = random::<u16>() % 10773;
+        // let (input, target) = get_training_data("dataset", digit, index);
+        let file = random_file(&format!("training_data/{digit}/{digit}/"));
+        let (input, target) = get_training_data_path(&file, digit);
         neural_network.training_step(&input, &target, training_rate);
         i += 1;
     }
     println!("{}; iteration {};", chrono::Local::now(), i);
+}
+
+fn random_file(path: &str) -> String {
+    let mut rng = rand::rng();
+    let files = fs::read_dir(path).unwrap();
+    files.choose(&mut rng).unwrap().unwrap().path().display().to_string()
 }
 
 pub fn save(neural_network: &NeuralNetwork, name: &str) {

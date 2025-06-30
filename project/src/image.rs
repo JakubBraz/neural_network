@@ -3,7 +3,7 @@ use image::{GenericImageView, ImageBuffer, ImageReader, Rgba, RgbaImage};
 pub const WIDTH: usize = 28;
 pub const HEIGHT: usize = 28;
 
-fn result_array(digit: u8) -> [f64; 10] {
+fn result_array(digit: u8) -> [f32; 10] {
     match digit {
         0 => [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
         1 => [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
@@ -15,12 +15,11 @@ fn result_array(digit: u8) -> [f64; 10] {
         7 => [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0],
         8 => [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0],
         9 => [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0],
-        _ => [0.0; 10]
+        _ => panic!("digit out of range"),
     }
 }
 
-pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f64; WIDTH * HEIGHT], [f64; 10]) {
-    let path = format!("{catalog}/{digit}/{digit}/{index}.png");
+pub fn get_training_data_path(path: &str, digit: u8) -> ([f32; WIDTH * HEIGHT], [f32; 10]) {
     let img = ImageReader::open(path).unwrap().decode().unwrap();
     let zero_pixel = Rgba::from([0, 0, 0, 0]);
     let mut result = [0.0; WIDTH * HEIGHT];
@@ -31,13 +30,19 @@ pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f64; WIDTH *
             // if p != zero_pixel {
             //     result[col * HEIGHT + row] = 1.0;
             // }
-            result[col * HEIGHT + row] = p[3] as f64 / 255.0;
+            result[col * HEIGHT + row] = p[3] as f32 / 255.0;
         }
     }
+    // println!("learning {:?}", result);
     (result, result_array(digit))
 }
 
-pub fn save_training_data(catalog: &str, digit: u8, image_data: &[f64], index: u32) {
+pub fn get_training_data(catalog: &str, digit: u8, index: u16) -> ([f32; WIDTH * HEIGHT], [f32; 10]) {
+    let path = format!("{catalog}/{digit}/{digit}/{index}.png");
+    get_training_data_path(&path, digit)
+}
+
+pub fn save_training_data(catalog: &str, digit: u8, image_data: &[f32], index: u32) {
     let path = format!("{catalog}/{digit}/{digit}/{index}.png");
     let mut img = RgbaImage::new(WIDTH as u32, HEIGHT as u32);
     for col in 0..HEIGHT {

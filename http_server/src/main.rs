@@ -12,14 +12,14 @@ use rocket::State;
 #[serde(crate = "rocket::serde")]
 struct TrainingData {
     digit: u8,
-    image_data: Vec<f64>,
+    image_data: Vec<f32>,
 }
 
 #[post("/predict", data = "<body>")]
 fn predict(body: &str, neural_network: &State<NeuralNetwork>) -> String {
-    let input: Vec<f64> = body[1..(body.len() - 1)]
+    let input: Vec<f32> = body[1..(body.len() - 1)]
         .split(",")
-        .map(|x| x.parse::<f64>().unwrap())
+        .map(|x| x.parse::<f32>().unwrap())
         .collect();
     let result = neural_network.process(&input);
     format!("[{}]", result.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(","))
@@ -45,7 +45,9 @@ fn count_files() -> Vec<u32> {
 
 #[launch]
 fn rocket() -> _ {
-    let neural_network = network_interface::load("networks/3");
+    // let neural_network = network_interface::load("networks/3");
+    // let neural_network = network_interface::load("../project/networks/after_learn_network");
+    let neural_network = network_interface::load("networks/manual_dataset_5min");
 
     rocket::build()
         .manage(neural_network)

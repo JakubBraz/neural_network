@@ -3,10 +3,10 @@ use crate::network_math;
 
 #[derive(Debug, Clone)]
 pub struct NeuralNetwork {
-    pub weights: Vec<Vec<Vec<f64>>>,
-    pub biases: Vec<Vec<f64>>,
-    pre_activations: Vec<Vec<f64>>,
-    activations: Vec<Vec<f64>>,
+    pub weights: Vec<Vec<Vec<f32>>>,
+    pub biases: Vec<Vec<f32>>,
+    pre_activations: Vec<Vec<f32>>,
+    activations: Vec<Vec<f32>>,
 }
 
 impl PartialEq for NeuralNetwork {
@@ -16,37 +16,37 @@ impl PartialEq for NeuralNetwork {
 }
 
 impl NeuralNetwork {
-    fn activation(x: f64) -> f64 {
+    fn activation(x: f32) -> f32 {
         1.0 / (1.0 + (-x).exp())
     }
 
     pub fn new(layers: &[u32]) -> Self {
         // first layer is input, the last one is output
         // there is no bias layer for first layer (input)
-        let mut weights: Vec<Vec<Vec<f64>>> = Vec::new();
-        let mut biases: Vec<Vec<f64>> = Vec::new();
+        let mut weights: Vec<Vec<Vec<f32>>> = Vec::new();
+        let mut biases: Vec<Vec<f32>> = Vec::new();
         for i in 1..layers.len() {
             weights.push(Vec::new());
             biases.push(Vec::new());
             for _ in 0..layers[i] {
-                let mut v: Vec<f64> = Vec::new();
+                let mut v: Vec<f32> = Vec::new();
                 for _ in 0..layers[i - 1] {
                     //todo a lot depend on inital weights, very often all goes to 0 :/
 
                     // v.push((random::<f32>() * 2.0 - 1.0) * 0.1);
-                    v.push((random::<f64>() * 2.0 - 1.0) * 0.2);
+                    v.push((random::<f32>() * 2.0 - 1.0) * 0.2);
                     // v.push(random());
                 }
                 weights.last_mut().unwrap().push(v);
                 // biases.last_mut().unwrap().push(random::<f32>() * 10.0 - 5.0);
                 // biases.last_mut().unwrap().push(random::<f32>() * 100.0 - 50.0);
                 // biases.last_mut().unwrap().push((random::<f32>() * 2.0 - 1.0) * 0.1);
-                biases.last_mut().unwrap().push((random::<f64>() * 2.0 - 1.0) * 0.2);
+                biases.last_mut().unwrap().push((random::<f32>() * 2.0 - 1.0) * 0.2);
             }
         }
 
-        let mut pre_activations: Vec<Vec<f64>> = Vec::new();
-        let mut activations: Vec<Vec<f64>> = Vec::new();
+        let mut pre_activations: Vec<Vec<f32>> = Vec::new();
+        let mut activations: Vec<Vec<f32>> = Vec::new();
 
         for i in 0..biases.len() {
             let empty_vec = vec![0.0; biases[i].len()];
@@ -63,7 +63,7 @@ impl NeuralNetwork {
         Self { weights: vec![], biases: vec![], pre_activations: vec![], activations: vec![] }
     }
 
-    pub fn process(&self, input: &[f64]) -> Vec<f64> {
+    pub fn process(&self, input: &[f32]) -> Vec<f32> {
         //todo improve it, parallelize and calculate product in sum in a one go instead of separate functions, limit allocations
         let mut prev = input.to_vec();
         let mut result = Vec::new();
@@ -79,7 +79,7 @@ impl NeuralNetwork {
         result
     }
 
-    pub fn process_mutable(&mut self, input: &[f64]) -> Vec<f64> {
+    pub fn process_mutable(&mut self, input: &[f32]) -> Vec<f32> {
         //todo improve it, parallelize and calculate product in sum in a one go instead of separate functions
         for i in 0..self.weights.len() {
             let prev = if i==0 { input } else { &self.activations[i-1] };
@@ -92,10 +92,10 @@ impl NeuralNetwork {
         self.activations.last().unwrap().clone()
     }
 
-    pub fn training_step(&mut self, inputs: &[f64], targets: &[f64], learning_rate: f64) {
+    pub fn training_step(&mut self, inputs: &[f32], targets: &[f32], learning_rate: f32) {
         let processed = self.process_mutable(inputs);
 
-        let mut deltas: Vec<Vec<f64>> = self.biases.iter().map(|x| x.iter().map(|_| 0.0).collect()).collect();
+        let mut deltas: Vec<Vec<f32>> = self.biases.iter().map(|x| x.iter().map(|_| 0.0).collect()).collect();
         let mut gradients_weights = self.weights.clone();
         let mut gradients_biases = self.biases.clone();
 
@@ -112,7 +112,7 @@ impl NeuralNetwork {
         //     }
         // }
 
-        println!("DELTAS OUTPUT {:?}", deltas[layer]);
+        // println!("DELTAS OUTPUT {:?}", deltas[layer]);
         // panic!();
 
         // calculate gradients of the remaining layers
@@ -163,7 +163,7 @@ impl NeuralNetwork {
         }
     }
 
-    fn update_gradients(layer: usize, deltas: &Vec<Vec<f64>>, inputs: &[f64], gradients_biases: &mut Vec<Vec<f64>>, gradients_weights: &mut Vec<Vec<Vec<f64>>>, activations: &Vec<Vec<f64>>) {
+    fn update_gradients(layer: usize, deltas: &Vec<Vec<f32>>, inputs: &[f32], gradients_biases: &mut Vec<Vec<f32>>, gradients_weights: &mut Vec<Vec<Vec<f32>>>, activations: &Vec<Vec<f32>>) {
         for i in 0..deltas[layer].len() {
             gradients_biases[layer][i] = deltas[layer][i];
             for j in 0..gradients_weights[layer][i].len() {
@@ -225,10 +225,10 @@ impl NeuralNetwork {
         for layer in 1..header.len() {
             for current_layer_i in 0..header[layer] as usize {
                 for prev_layer_i in 0..header[layer - 1] as usize {
-                    let val: f64 = it.find_map(|x| x.parse().ok()).unwrap();
+                    let val: f32 = it.find_map(|x| x.parse().ok()).unwrap();
                     result.weights[layer - 1][current_layer_i][prev_layer_i] = val;
                 }
-                let val: f64 = it.find_map(|x| x.parse().ok()).unwrap();
+                let val: f32 = it.find_map(|x| x.parse().ok()).unwrap();
                 result.biases[layer - 1][current_layer_i] = val;
             }
         }
@@ -292,7 +292,7 @@ mod test {
         a3
         0.7287013674285573
          */
-        let expected: f64 = 0.7287013674285573;
+        let expected: f32 = 0.7287013674285573;
         let result1 = network.process(&[0.1, 0.8]);
         let result2 = network.process_mutable(&[0.1, 0.8]);
 
