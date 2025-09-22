@@ -207,7 +207,7 @@ impl NeuralNetwork {
         // the first line with only numbers is considered the header, for example "2 3 2 1"
         let header: Vec<u32> = it.find_map(
             |s| {
-                let split: Vec<&str> = s.split(' ').collect();
+                let split: Vec<&str> = s.trim().split(' ').collect();
                 if split.len() < 2 {
                     return None;
                 }
@@ -225,10 +225,10 @@ impl NeuralNetwork {
         for layer in 1..header.len() {
             for current_layer_i in 0..header[layer] as usize {
                 for prev_layer_i in 0..header[layer - 1] as usize {
-                    let val: f32 = it.find_map(|x| x.parse().ok()).unwrap();
+                    let val: f32 = it.find_map(|x| x.trim().parse().ok()).unwrap();
                     result.weights[layer - 1][current_layer_i][prev_layer_i] = val;
                 }
-                let val: f32 = it.find_map(|x| x.parse().ok()).unwrap();
+                let val: f32 = it.find_map(|x| x.trim().parse().ok()).unwrap();
                 result.biases[layer - 1][current_layer_i] = val;
             }
         }
