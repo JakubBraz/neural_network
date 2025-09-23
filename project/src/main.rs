@@ -9,34 +9,6 @@ mod neural_network;
 mod network_math;
 mod image;
 
-// fn main() {
-//     // let s1 = read_to_string("networks/3_000_000_iterations/after_learn_network").unwrap();
-//     let s1 = read_to_string("networks/after_learn_network").unwrap();
-//     // let s2 = read_to_string("networks/3_000_000_iterations/new_network").unwrap();
-//     let s2 = read_to_string("networks/new_network").unwrap();
-//     let mut total: f32 = 0.0;
-//     let mut updated: f32 = 0.0;
-//     for (a, b) in s1.lines().zip(s2.lines()) {
-//         match a.parse::<f32>() {
-//             Ok(a) => {
-//                 let b = b.parse::<f32>().unwrap();
-//                 if a != b {
-//                     updated += 1.0;
-//                 }
-//                 total += 1.0;
-//             }
-//             Err(_) => {}
-//         }
-//     }
-//     println!("changed {}; lines {}; % changed lines {}", updated, total, updated/total);
-// }
-
-// fn main() {
-//     let mut network = load("networks/3_000_000_iterations/after_learn_network");
-//     let (inp, _) = get_training_data("dataset", 6, 2642);
-//     let res = network.process(&inp);
-//     println!("{:?}", res);
-// }
 
 fn main() {
     // let mut neural_network = NeuralNetwork::new(&[(WIDTH * HEIGHT) as u32, 100, 10]);
@@ -70,29 +42,3 @@ fn main() {
     println!("weights; changed {}; total {}; {}%", changed_weights, total_weights, changed_weights / total_weights * 100.0);
     println!("TOTAL; changed {}; total {}; {}%", changed_biases + changed_weights, total_biases + total_weights, (changed_biases + changed_weights) / (total_biases + total_weights) * 100.0);
 }
-
-// fn main() {
-//     let network_file = "networks/network1";
-//     // let network = load(network_file);
-//     // let network = NeuralNetwork::new(&[2, 3, 2, 1]);
-//     let mut network = NeuralNetwork::new(&[5, 10, 10]);
-//
-//     println!("{:?}", network);
-//     // println!("{:?}", network.process(&[0.1, 0.2, 0.3]));
-//     println!("{:?}", network.process(&[0.1, 0.2, 0.3, 0.2, 0.1]));
-//
-//     println!("learning...");
-//     for i in 0..100 {
-//         network.training_step(&[0.1, 0.2, 0.3, 0.2, 0.1], &[0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], 10.0);
-//     }
-//     println!("{:?}", network);
-//     println!("{:?}", network.process(&[0.1, 0.2, 0.3, 0.2, 0.1]));
-// }
-
-// fn main() {
-//     read();
-//     let (input, target) = get_training_data(5, 3754);
-//     println!("{:?}", input);
-//     println!("{}", input.len());
-//     println!("{:?}", target);
-// }

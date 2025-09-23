@@ -134,31 +134,14 @@ impl NeuralNetwork {
             Self::update_gradients(layer, &deltas, inputs, &mut gradients_biases, &mut gradients_weights, &self.activations);
         }
 
-        // println!("weights {:?}", &self.weights[0][0][0..5]);
-        // println!("gradients weight {:?}", &gradients_weights[0][0][0..5]);
-        // println!("gradients biases {:?}", &gradients_biases[0][0..5]);
-        // println!("deltas {} {:?}", deltas[1].iter().all(|&x| x == 0.0), &deltas[0][0..10]);
-        // println!("deltas {:?}", deltas);
-
         // update weights and biases
         for layer in 0..gradients_biases.len() {
             for i in 0..gradients_biases[layer].len() {
                 for j in 0..gradients_weights[layer][i].len() {
                     let prev_val = self.weights[layer][i][j];
                     self.weights[layer][i][j] -= learning_rate * gradients_weights[layer][i][j];
-                    // if prev_val == self.weights[layer][i][j] {
-                    //     println!("layer {}; i {}; j {}; weight {}", layer, i, j, gradients_weights[layer][i][j]);
-                    //     panic!();
-                    // }
                 }
                 self.biases[layer][i] -= learning_rate * gradients_biases[layer][i];
-                // if self.biases[layer][i] == prev_val {
-                //     println!("{deltas:?}");
-                //     println!("{prev_val} {}", self.biases[layer][i]);
-                //     println!("{}", gradients_biases == deltas);
-                //     println!("layer {layer}; i {i}; gradient {}; {}", gradients_biases[layer][i], learning_rate * gradients_biases[layer][i]);
-                //     panic!();
-                // }
             }
         }
     }
@@ -169,10 +152,6 @@ impl NeuralNetwork {
             for j in 0..gradients_weights[layer][i].len() {
                 let prev = if layer == 0 { inputs } else { &activations[layer-1] };
                 gradients_weights[layer][i][j] = deltas[layer][i] * prev[j];
-                // if gradients_weights[layer][i][j] == 0.0 {
-                //     println!("layer {}; i {}; j {}; gradient {}; prev {:?}", layer, i, j, gradients_weights[layer][i][j], prev[j]);
-                //     panic!();
-                // }
             }
         }
     }
